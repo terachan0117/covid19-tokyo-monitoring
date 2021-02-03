@@ -5,6 +5,7 @@ import datetime
 import pandas as pd
 import tabula
 import re
+from janome.tokenizer import Tokenizer
 
 def getLastMeetingNo():
     df = pd.read_csv('data/monitoring_comments.csv')
@@ -54,11 +55,20 @@ def getPdfDataFrame(pdf_url):
     df= df.groupby('monitoring_index')['monitoring_comment'].apply(''.join).reset_index()
     return df
 
-def addDataToCsv(meeting_no, meeting_date, df):
-    df['meeting_no'] = meeting_no
-    df['meeting_date'] = meeting_date
-    df = df[['meeting_no', 'meeting_date', 'monitoring_index', 'monitoring_comment']]
-    df.to_csv('data/monitoring_comments.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
+def generateToken(df):
+    df_token = pd.DataFrame(index=[], columns=['meeting_no', 'monitoring_index', 'token'])
+    for row in df.itertuples(name=None):
+        meeting_no = row[1]
+        monitoring_index = row[3]
+        t = Tokenizer()
+        tokens = t.tokenize(row[4])
+        for token in tokens:
+            if not re.search(r'[、。I,%％#※\\\(\)\.\-\/]', token.surface) and token.surface not in ['ア', 'イ', 'ウ', 'エ', 'オ', 'カ', 'キ']:
+                word_category = token.part_of_speech.split(',')[0]
+                word_type = token.part_of_speech.split(',')[1]
+                if word_category == '名詞' and word_type != '数'and word_type != '代名詞' and word_type != '非自立' and word_type != '接尾':
+                    df_token.loc[len(df_token.index)] =  [meeting_no, monitoring_index, token.surface]
+    df_token.to_csv('data/monitoring_comments_token.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
 
 def main():
     last_meeting_no = getLastMeetingNo()
@@ -66,7 +76,11 @@ def main():
     if meeting_no > last_meeting_no:
         comment_pdf_url = getCommentPdfUrl(meeting_url)
         df = getPdfDataFrame(comment_pdf_url)
-        addDataToCsv(meeting_no, meeting_date, df)
+        df['meeting_no'] = meeting_no
+        df['meeting_date'] = meeting_date
+        df = df[['meeting_no', 'meeting_date', 'monitoring_index', 'monitoring_comment']]
+        df.to_csv('data/monitoring_comments.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
+        generateToken(df)
     else:
         print('error')
         print('meeting_no = ', meeting_no)
