@@ -63,7 +63,7 @@ def generateToken(df):
         t = Tokenizer()
         tokens = t.tokenize(row[4])
         for token in tokens:
-            if not re.search(r'[、。I,%％#※\\\(\)\.\-\/]', token.surface) and token.surface not in ['ア', 'イ', 'ウ', 'エ', 'オ', 'カ', 'キ']:
+            if not re.search(r'[、。I,%％~～#＃※\\\(\)\.\-\/]', token.surface) and token.surface not in ['ア', 'イ', 'ウ', 'エ', 'オ', 'カ', 'キ']:
                 word_category = token.part_of_speech.split(',')[0]
                 word_type = token.part_of_speech.split(',')[1]
                 if word_category == '名詞' and word_type != '数'and word_type != '代名詞' and word_type != '非自立' and word_type != '接尾':
