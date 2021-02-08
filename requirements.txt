@@ -3,3 +3,4 @@ beautifulsoup4
 pandas
 tabula-py
 janome
+numpy

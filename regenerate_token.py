@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from janome.tokenizer import Tokenizer
 import re
 
@@ -18,6 +19,7 @@ def reGenerateToken():
                 word_type = token.part_of_speech.split(',')[1]
                 if word_category == '名詞' and word_type != '数'and word_type != '代名詞' and word_type != '非自立' and word_type != '接尾':
                     df_token.loc[len(df_token.index)] =  [meeting_no, meeting_date, monitoring_index, line_number, token.surface] + token.part_of_speech.split(',') + [token.infl_type, token.base_form]
+    df_token = df_token.replace('*', np.nan)
     df_token.to_csv('data/monitoring_comments_token.csv', index=False, encoding='utf-8-sig')
 
 def main():
