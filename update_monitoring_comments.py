@@ -55,21 +55,6 @@ def getPdfDataFrame(pdf_url):
     df= df.groupby('monitoring_index')['monitoring_comment'].apply(''.join).reset_index()
     return df
 
-def generateToken(df):
-    df_token = pd.DataFrame(index=[], columns=['meeting_no', 'monitoring_index', 'token'])
-    for row in df.itertuples(name=None):
-        meeting_no = row[1]
-        monitoring_index = row[3]
-        t = Tokenizer()
-        tokens = t.tokenize(row[4])
-        for token in tokens:
-            if not re.search(r'[、。I,%％~～#＃※\\\(\)\.\-\/]', token.surface) and token.surface not in ['ア', 'イ', 'ウ', 'エ', 'オ', 'カ', 'キ']:
-                word_category = token.part_of_speech.split(',')[0]
-                word_type = token.part_of_speech.split(',')[1]
-                if word_category == '名詞' and word_type != '数'and word_type != '代名詞' and word_type != '非自立' and word_type != '接尾':
-                    df_token.loc[len(df_token.index)] =  [meeting_no, monitoring_index, token.surface]
-    df_token.to_csv('data/monitoring_comments_token.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
-
 def splitComment(df):
     df_split = pd.DataFrame(index=[], columns=['meeting_no', 'meeting_date', 'monitoring_index', 'line_number', 'monitoring_comment'])
     for row in df.itertuples(name=None):
@@ -81,7 +66,24 @@ def splitComment(df):
         splits.pop()
         for i in range(len(splits)):
             df_split.loc[len(df_split.index)] =  [meeting_no, meeting_date, monitoring_index, i + 1, splits[i] + '。']
-    df_steps.to_csv('data/monitoring_comments_split.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
+    return df_split
+
+def generateToken(df):
+    df_token = pd.DataFrame(index=[], columns=['meeting_no', 'meeting_date', 'monitoring_index', 'line_number', 'token', 'part_of_speech', 'part_of_speech2', 'part_of_speech3', 'part_of_speech4', 'infl_type', 'base_form'])
+    for row in df.itertuples(name=None):
+        meeting_no = row[1]
+        meeting_date = row[2]
+        monitoring_index = row[3]
+        line_number = row[4]
+        t = Tokenizer()
+        tokens = t.tokenize(row[5])
+        for token in tokens:
+            if not re.search(r'[、。I,%％~～#＃※\\\(\)\.\-\/]', token.surface) and token.surface not in ['ア', 'イ', 'ウ', 'エ', 'オ', 'カ', 'キ']:
+                word_category = token.part_of_speech.split(',')[0]
+                word_type = token.part_of_speech.split(',')[1]
+                if word_category == '名詞' and word_type != '数'and word_type != '代名詞' and word_type != '非自立' and word_type != '接尾':
+                    df_token.loc[len(df_token.index)] =  [meeting_no, meeting_date, monitoring_index, line_number, token.surface] + token.part_of_speech.split(',') + [token.infl_type, token.base_form]
+    return df_token
 
 def main():
     last_meeting_no = getLastMeetingNo()
@@ -93,8 +95,10 @@ def main():
         df['meeting_date'] = meeting_date
         df = df[['meeting_no', 'meeting_date', 'monitoring_index', 'monitoring_comment']]
         df.to_csv('data/monitoring_comments.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
-        generateToken(df)
-        splitComment(df)
+        df_split = splitComment(df)
+        df_split.to_csv('data/monitoring_comments_split.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
+        df_token = generateToken(df_split)
+        df_token.to_csv('data/monitoring_comments_token.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
     else:
         print('error')
         print('meeting_no = ', meeting_no)
