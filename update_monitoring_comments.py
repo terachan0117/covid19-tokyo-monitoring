@@ -70,6 +70,19 @@ def generateToken(df):
                     df_token.loc[len(df_token.index)] =  [meeting_no, monitoring_index, token.surface]
     df_token.to_csv('data/monitoring_comments_token.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
 
+def splitComment(df):
+    df_split = pd.DataFrame(index=[], columns=['meeting_no', 'meeting_date', 'monitoring_index', 'line_number', 'monitoring_comment'])
+    for row in df.itertuples(name=None):
+        meeting_no = row[1]
+        meeting_date = row[2]
+        monitoring_index = row[3]
+        monitoring_comment = row[4]
+        splits = monitoring_comment.split('。')
+        splits.pop()
+        for i in range(len(splits)):
+            df_split.loc[len(df_split.index)] =  [meeting_no, meeting_date, monitoring_index, i + 1, splits[i] + '。']
+    df_steps.to_csv('data/monitoring_comments_split.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
+
 def main():
     last_meeting_no = getLastMeetingNo()
     meeting_no, meeting_date, meeting_url = getLatestMeetingInfo()
@@ -81,6 +94,7 @@ def main():
         df = df[['meeting_no', 'meeting_date', 'monitoring_index', 'monitoring_comment']]
         df.to_csv('data/monitoring_comments.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
         generateToken(df)
+        splitComment(df)
     else:
         print('error')
         print('meeting_no = ', meeting_no)
