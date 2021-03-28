@@ -53,8 +53,7 @@ def getPdfDataFrame(pdf_url):
     df['monitoring_comment']=df['monitoring_comment'].replace(r'[\r\n]','', regex=True)
     df['monitoring_index']=df['monitoring_index'].fillna(method='ffill')
     df['monitoring_index']=df['monitoring_index'].apply(lambda x: str(x)[0])
-    df= df.groupby('monitoring_index')['monitoring_comment'].apply(''.join).reset_index()
-    df['monitoring_index']=df['monitoring_index'].apply(lambda x: int(x))
+    df = df.groupby('monitoring_index')['monitoring_comment'].apply(''.join).reset_index()
     return df
 
 def splitComment(df):
