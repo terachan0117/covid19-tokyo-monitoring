@@ -52,8 +52,9 @@ def getPdfDataFrame(pdf_url):
     df['monitoring_index']=df['monitoring_index'].replace(r'[\r\n]','', regex=True)
     df['monitoring_comment']=df['monitoring_comment'].replace(r'[\r\n]','', regex=True)
     df['monitoring_index']=df['monitoring_index'].fillna(method='ffill')
-    df['monitoring_index']=df['monitoring_index'].apply(lambda x: int(str(x)[0]))
+    df['monitoring_index']=df['monitoring_index'].apply(lambda x: str(x)[0])
     df= df.groupby('monitoring_index')['monitoring_comment'].apply(''.join).reset_index()
+    df['monitoring_index']=df['monitoring_index'].apply(lambda x: int(x))
     return df
 
 def splitComment(df):
@@ -95,6 +96,7 @@ def main():
         df = getPdfDataFrame(comment_pdf_url)
         df['meeting_no'] = meeting_no
         df['meeting_date'] = meeting_date
+
         df = df[['meeting_no', 'meeting_date', 'monitoring_index', 'monitoring_comment']]
         df.to_csv('data/monitoring_comments.csv', mode='a', header=False, index=False, encoding='utf-8-sig')
         df_split = splitComment(df)
