@@ -52,7 +52,7 @@ def getPdfDataFrame(pdf_url):
     df['monitoring_index']=df['monitoring_index'].replace(r'[\r\n]','', regex=True)
     df['monitoring_comment']=df['monitoring_comment'].replace(r'[\r\n]','', regex=True)
     df['monitoring_index']=df['monitoring_index'].fillna(method='ffill')
-    df['monitoring_index']=df['monitoring_index'].apply(lambda x: x[0])
+    df['monitoring_index']=df['monitoring_index'].apply(lambda x: int(str(x)[0]))
     df= df.groupby('monitoring_index')['monitoring_comment'].apply(''.join).reset_index()
     return df
 
