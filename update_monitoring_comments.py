@@ -16,7 +16,7 @@ def getLastMeetingNo():
         return 0
 
 def getLatestMeetingInfo():
-    html = urlopen('https://www.bousai.metro.tokyo.lg.jp/taisaku/saigai/1009676/index.html')
+    html = urlopen('https://www.bousai.metro.tokyo.lg.jp/taisaku/saigai/1013388/index.html')
     bsObj = BeautifulSoup(html, 'html.parser')
     ul = bsObj.select_one('ul.listlink')
     li = ul.select_one('li')
