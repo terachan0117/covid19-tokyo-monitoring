@@ -2,7 +2,7 @@ name: Update monitoring comments
 
 on:
   schedule:
-    - cron:  '0 9 * * 4'
+    - cron:  '0 9 * * *'
   workflow_dispatch:
 
 jobs:
